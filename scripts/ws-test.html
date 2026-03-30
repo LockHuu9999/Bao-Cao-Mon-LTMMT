@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <title>WebSocket Test - WS → TCP Bridge</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,'Helvetica Neue',Arial;margin:18px}
+    label{display:block;margin-top:8px}
+    input, select, button, textarea{font:inherit}
+    #log{width:100%;height:320px;margin-top:8px;padding:8px;white-space:pre-wrap;overflow:auto;border:1px solid #ccc;border-radius:6px}
+    .row{display:flex;gap:8px;align-items:center;margin-top:8px}
+    .small{width:80px}
+    .wide{flex:1}
+    .muted{color:#666;font-size:0.9rem}
+  </style>
+</head>
+<body>
+  <h2>WS test client (dùng với ws-bridge + ngrok)</h2>
+
+  <label>WebSocket URL (ví dụ: <span class="muted">wss://unpalpable-solange-probingly.ngrok-free.dev</span>)</label>
+  <div class="row">
+    <input id="url" class="wide" value="wss://" placeholder="wss://..." />
+    <button id="connect">Connect</button>
+    <button id="disconnect" disabled>Disconnect</button>
+  </div>
+
+  <div class="row">
+    <label style="margin:0">Auto-append newline</label>
+    <input id="autoNl" type="checkbox" checked />
+    <span class="muted">(hầu hết server mong mỗi dòng kết thúc bằng \n)</span>
+  </div>
+
+  <label>Send raw line</label>
+  <div class="row">
+    <input id="line" class="wide" placeholder="Nhập dòng để gửi, ví dụ: MOVE 3 4" />
+    <button id="send">Send</button>
+  </div>
+
+  <label>Quick commands</label>
+  <div class="row">
+    <button id="ready">READY</button>
+    <div class="row" style="margin:0">
+      <input id="rowInput" class="small" placeholder="row" />
+      <input id="colInput" class="small" placeholder="col" />
+      <button id="move">Send MOVE</button>
+    </div>
+    <button id="timeout">TIMEOUT</button>
+    <button id="quit">QUIT</button>
+  </div>
+
+  <label>Log</label>
+  <div id="log"></div>
+
+  <script>
+    const urlEl = document.getElementById('url');
+    const connectBtn = document.getElementById('connect');
+    const disconnectBtn = document.getElementById('disconnect');
+    const logEl = document.getElementById('log');
+    const sendBtn = document.getElementById('send');
+    const lineEl = document.getElementById('line');
+    const autoNl = document.getElementById('autoNl');
+    const readyBtn = document.getElementById('ready');
+    const moveBtn = document.getElementById('move');
+    const timeoutBtn = document.getElementById('timeout');
+    const quitBtn = document.getElementById('quit');
+    const rowInput = document.getElementById('rowInput');
+    const colInput = document.getElementById('colInput');
+
+    let ws = null;
+
+    function log(txt){
+      const t = new Date().toLocaleTimeString();
+      logEl.textContent = `[${t}] ${txt}\n` + logEl.textContent;
+    }
+
+    function ensureOpen(){
+      if(!ws || ws.readyState !== WebSocket.OPEN){
+        alert('WebSocket chưa mở. Vui lòng kết nối trước.');
+        return false;
+      }
+      return true;
+    }
+
+    connectBtn.onclick = () => {
+      const url = urlEl.value.trim();
+      if(!url){ alert('Nhập URL WSS (ví dụ wss://... )'); return; }
+      try{
+        ws = new WebSocket(url);
+      }catch(e){ alert('URL không hợp lệ'); return; }
+      log('Connecting to ' + url);
+      connectBtn.disabled = true;
+      ws.onopen = () => { log('OPEN'); disconnectBtn.disabled = false; };
+      ws.onmessage = (ev) => { log('RECV: ' + ev.data); };
+      ws.onclose = () => { log('CLOSED'); connectBtn.disabled = false; disconnectBtn.disabled = true; };
+      ws.onerror = (e) => { log('ERROR: ' + (e && e.message ? e.message : JSON.stringify(e))); };
+    };
+
+    disconnectBtn.onclick = () => {
+      if(ws){ ws.close(); ws = null; }
+      connectBtn.disabled = false; disconnectBtn.disabled = true;
+    };
+
+    function sendLine(txt){
+      if(!ensureOpen()) return;
+      if(autoNl.checked && !txt.endsWith('\n')) txt = txt + '\n';
+      ws.send(txt);
+      log('SENT: ' + txt.replace(/\n/g,'\\n'));
+    }
+
+    sendBtn.onclick = () => { const txt = lineEl.value; if(txt) sendLine(txt); };
+
+    readyBtn.onclick = () => sendLine('READY');
+    timeoutBtn.onclick = () => sendLine('TIMEOUT');
+    quitBtn.onclick = () => sendLine('QUIT');
+
+    moveBtn.onclick = () => {
+      const r = rowInput.value.trim();
+      const c = colInput.value.trim();
+      if(!r || !c){ alert('Nhập row và col'); return; }
+      sendLine('MOVE ' + r + ' ' + c);
+    };
+
+    // allow Enter to send from raw line input
+    lineEl.addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); sendBtn.click(); } });
+
+    // small helper: prefill with a placeholder ngrok url if empty
+    if(!urlEl.value || urlEl.value==='wss://'){
+      urlEl.value = 'wss://<your-public-host>.ngrok.io';
+    }
+  </script>
+</body>
+</html>

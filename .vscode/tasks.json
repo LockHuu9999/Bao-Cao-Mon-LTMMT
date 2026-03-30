@@ -1,0 +1,17 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Build with javac (UTF-8)",
+      "type": "shell",
+      "command": "powershell",
+      "args": [
+        "-NoProfile",
+        "-Command",
+        "$srcs = Get-ChildItem -Path src -Recurse -Filter *.java | ForEach-Object { $_.FullName }; $out = Join-Path $env:USERPROFILE 'Desktop\\LTM\\DoanLTMMT\\build_classes'; if (!(Test-Path $out)) { New-Item -ItemType Directory -Path $out | Out-Null }; javac -encoding UTF-8 -d \"$out\" $srcs"
+      ],
+      "group": { "kind": "build", "isDefault": true },
+      "presentation": { "reveal": "always" }
+    }
+  ]
+}

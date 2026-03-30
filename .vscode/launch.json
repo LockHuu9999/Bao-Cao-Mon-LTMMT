@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "java",
+      "name": "frmLogin",
+      "request": "launch",
+      "mainClass": "frmLogin",
+      "projectName": "DoanLTMMT_25ff91ae"
+    },
+    {
+      "type": "java",
+      "name": "frmDauvoiban",
+      "request": "launch",
+      "mainClass": "frmDauvoiban",
+      "projectName": "DoanLTMMT_25ff91ae"
+    },
+    {
+      "type": "java",
+      "name": "frmDaungaunhien",
+      "request": "launch",
+      "mainClass": "frmDaungaunhien",
+      "projectName": "DoanLTMMT_25ff91ae"
+    },
+    {
+      "type": "java",
+      "name": "BanCoMay",
+      "request": "launch",
+      "mainClass": "BanCoMay",
+      "projectName": "DoanLTMMT_25ff91ae"
+    },
+    {
+      "type": "java",
+      "name": "Launch DoanLTMMT",
+      "request": "launch",
+      "mainClass": "doanltmmt.DoanLTMMT",
+      "projectName": "DoanLTMMT",
+      "cwd": "${workspaceFolder}"
+    }
+  ]
+}
